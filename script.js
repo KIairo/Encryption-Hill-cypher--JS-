@@ -1,10 +1,8 @@
 
 
-// =====================
-// CAESAR CIPHER
-// =====================
 function caesarCipher(text, shift) {
     let result = "";
+    const normalizedShift = ((shift % 26) + 26) % 26;
 
     for (let i = 0; i < text.length; i++) {
         let char = text[i];
@@ -13,9 +11,9 @@ function caesarCipher(text, shift) {
             let code = text.charCodeAt(i);
 
             if (code >= 65 && code <= 90) {
-                result += String.fromCharCode(((code - 65 + shift + 26) % 26) + 65);
+                result += String.fromCharCode(((code - 65 + normalizedShift) % 26) + 65);
             } else if (code >= 97 && code <= 122) {
-                result += String.fromCharCode(((code - 97 + shift + 26) % 26) + 97);
+                result += String.fromCharCode(((code - 97 + normalizedShift) % 26) + 97);
             }
         } else {
             result += char;
@@ -25,9 +23,7 @@ function caesarCipher(text, shift) {
     return result;
 }
 
-// =====================
-// HILL CIPHER
-// =====================
+
 
 function getKeyMatrix() {
     return [
@@ -36,22 +32,49 @@ function getKeyMatrix() {
     ];
 }
 
+function gcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b !== 0) {
+        const temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+function getDeterminantMod26(matrix) {
+    const [[a, b], [c, d]] = matrix;
+    return ((a * d - b * c) % 26 + 26) % 26;
+}
+
+function validateHillKey(matrix) {
+    const det = getDeterminantMod26(matrix);
+    if (gcd(det, 26) !== 1) {
+        throw new Error("Invalid Hill key: determinant has no modular inverse mod 26.");
+    }
+}
+
 function calculateInverseMatrix(matrix) {
     const [[a, b], [c, d]] = matrix;
-    const det = (a * d - b * c) % 26;
+    const det = getDeterminantMod26(matrix);
     const detInv = modInverse(det, 26);
+    if (detInv === null) {
+        throw new Error("Invalid Hill key: determinant has no modular inverse mod 26.");
+    }
 
     return [
-        [(d * detInv) % 26, (-b * detInv) % 26],
-        [(-c * detInv) % 26, (a * detInv) % 26]
+        [((d * detInv) % 26 + 26) % 26, ((-b * detInv) % 26 + 26) % 26],
+        [((-c * detInv) % 26 + 26) % 26, ((a * detInv) % 26 + 26) % 26]
     ];
 }
 
 function modInverse(a, m) {
+    a = ((a % m) + m) % m;
     for (let i = 1; i < m; i++) {
         if ((a * i) % m === 1) return i;
     }
-    return 1;
+    return null;
 }
 
 function charToNum(char) {
@@ -59,7 +82,7 @@ function charToNum(char) {
 }
 
 function numToChar(num) {
-    return String.fromCharCode((num % 26) + 65);
+    return String.fromCharCode(((num % 26) + 26) % 26 + 65);
 }
 
 function processText(text) {
@@ -106,13 +129,14 @@ function addPadding(text, casing) {
 
 function multiplyMatrix(matrix, pair) {
     return [
-        (matrix[0][0] * pair[0] + matrix[0][1] * pair[1]) % 26,
-        (matrix[1][0] * pair[0] + matrix[1][1] * pair[1]) % 26
+        ((matrix[0][0] * pair[0] + matrix[0][1] * pair[1]) % 26 + 26) % 26,
+        ((matrix[1][0] * pair[0] + matrix[1][1] * pair[1]) % 26 + 26) % 26
     ];
 }
 
 function hillEncrypt(text) {
     let keyMatrix = getKeyMatrix();
+    validateHillKey(keyMatrix);
     let casing = extractCasing(text);
     text = processText(text);
     let padded = addPadding(text, casing);
@@ -134,6 +158,7 @@ function hillEncrypt(text) {
 
 function hillDecrypt(text) {
     let keyMatrix = getKeyMatrix();
+    validateHillKey(keyMatrix);
     let inverseKeyMatrix = calculateInverseMatrix(keyMatrix);
     let casing = extractCasing(text);
     text = processText(text);
@@ -148,15 +173,14 @@ function hillDecrypt(text) {
         let decrypted = multiplyMatrix(inverseKeyMatrix, pair);
 
         result += numToChar(decrypted[0]);
-        result += numToChar(decrypted[1])
+        result += numToChar(decrypted[1]);
     }
 
     return applyCasing(result, casing);
 }
 
-// =====================
-// MAIN CONTROL LOGIC
-// =====================
+
+
 document.getElementById("cipherType").addEventListener("change", function() {
     const type = this.value;
     document.getElementById("caesarFields").style.display = type === "caesar" ? "block" : "none";
@@ -175,7 +199,11 @@ function encrypt() {
         const shift = parseInt(document.getElementById("shiftValue").value) || 3;
         result = caesarCipher(text, shift);
     } else if (type === "hill") {
-        result = hillEncrypt(text);
+        try {
+            result = hillEncrypt(text);
+        } catch (error) {
+            result = error.message;
+        }
     }
 
     document.getElementById("DisplayResult").innerText = result;
@@ -193,7 +221,11 @@ function decrypt() {
         const shift = parseInt(document.getElementById("shiftValue").value) || 3;
         result = caesarCipher(text, -shift);
     } else if (type === "hill") {
-        result = hillDecrypt(text);
+        try {
+            result = hillDecrypt(text);
+        } catch (error) {
+            result = error.message;
+        }
     }
 
     document.getElementById("DisplayResult").innerText = result;
