@@ -11,12 +11,10 @@ body {
     min-height: 100vh;
 }
 
-/* Container spacing (optional but improves layout) */
 h3 {
     margin-bottom: 10px;
 }
 
-/* Dropdown (NEW - matches your select) */
 select {
     background-color: #333333;
     color: #ffffff;
@@ -28,7 +26,6 @@ select {
     cursor: pointer;
 }
 
-/* Input field */
 input[type="text"] {
     background-color: #333333;
     color: #ffffff;
@@ -41,7 +38,6 @@ input[type="text"] {
     margin-bottom: 15px;
 }
 
-/* Buttons */
 button {
     background-color: #333333;
     color: #ffffff;
@@ -54,27 +50,81 @@ button {
     transition: all 0.3s ease;
 }
 
-/* Button hover effect */
 button:hover {
     background-color: #555555;
     transform: scale(1.05);
 }
 
-/* Result display (fixed to match your div ID) */
 #DisplayResult {
+ background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #555555;
+    padding: 10px;
+    font-size: 16px; 
+    width: 300px;
+    height: 20px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 15px;
+    
+}
+
+button + button {
+    margin-left: 10px;
+}
+
+input [type="number"] {
+background-color: red;
+}
+
+#caesarFields {
+    background-color: #222222;
+    border: 1px solid #444444;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#caesarFields label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+#caesarFields input[type="number"] {
     background-color: #333333;
     color: #ffffff;
     border: 1px solid #555555;
-    padding: 15px;
-    font-size: 18px;
-    margin-top: 20px;
-    width: 300px;
+    padding: 8px;
+    font-size: 16px;
+    width: 200px;
     border-radius: 4px;
     text-align: center;
-    word-wrap: break-word;
 }
 
-/* Optional: cleaner spacing between buttons */
-button + button {
-    margin-left: 10px;
+#hillFields {
+    background-color: #222222;
+    border: 1px solid #444444;
+    padding: 15spx;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#hillFields h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#hillFields input[type="number"] {
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #555555;
+    padding: 8px;
+    font-size: 16px;
+    width: 60px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 5px;
 }

@@ -6,13 +6,30 @@
 </head>
 <body>
 
+        <h2>Encryption/Decryption</h2>
+
 <h3>Choose Cipher:</h3>
 <select id="cipherType">
     <option value="caesar">Caesar Cipher</option>
     <option value="hill">Hill Cipher</option>
 </select>
 
-<br><br>
+<br>
+
+<div id="caesarFields">
+    <label for="shiftValue">Shift Value:</label>
+    <input type="number" id="shiftValue" placeholder="Enter shift value" min="1" max="25">
+</div>
+
+<div id="hillFields" style="display:none; margin-top: 10px;">
+    <h4>2x2 Key Matrix:</h4>
+    <input type="number" id="key00" placeholder="[0,0]" min="0" max="25" value="0">
+    <input type="number" id="key01" placeholder="[0,1]" min="0" max="25" value="0"><br>
+    <input type="number" id="key10" placeholder="[1,0]" min="0" max="25" value="0">
+    <input type="number" id="key11" placeholder="[1,1]" min="0" max="25" value="0">
+</div>
+
+
 <h3 id="inputLabel">Plain Text</h3>
 <input type="text" id="textInput" placeholder="Enter Text">
 
@@ -23,145 +40,11 @@
 
 <button onclick="encrypt()">Encryption</button>
 <button onclick="decrypt()">Decryption</button>
+<button onclick="clearAll()">Clear All</button>
 
 
 
-<script>
-
-// =====================
-// CAESAR CIPHER
-// =====================
-function caesarCipher(text, shift) {
-    let result = "";
-
-    for (let i = 0; i < text.length; i++) {
-        let char = text[i];
-
-        if (char.match(/[a-z]/i)) {
-            let code = text.charCodeAt(i);
-
-            if (code >= 65 && code <= 90) {
-                result += String.fromCharCode(((code - 65 + shift + 26) % 26) + 65);
-            } else if (code >= 97 && code <= 122) {
-                result += String.fromCharCode(((code - 97 + shift + 26) % 26) + 97);
-            }
-        } else {
-            result += char;
-        }
-    }
-
-    return result;
-}
-
-// =====================
-// HILL CIPHER
-// =====================
-
-// Key Matrix
-const keyMatrix = [
-    [3, 3],
-    [2, 5]
-];
-
-// Inverse Matrix
-const inverseKeyMatrix = [
-    [15, 17],
-    [20, 9]
-];
-
-function charToNum(char) {
-    return char.charCodeAt(0) - 65;
-}
-
-function numToChar(num) {
-    return String.fromCharCode((num % 26) + 65);
-}
-
-function processText(text) {
-    text = text.toUpperCase().replace(/[^A-Z]/g, "");
-
-    if (text.length % 2 !== 0) {
-        text += "X";
-    }
-
-    return text;
-}
-
-function multiplyMatrix(matrix, pair) {
-    return [
-        (matrix[0][0] * pair[0] + matrix[0][1] * pair[1]) % 26,
-        (matrix[1][0] * pair[0] + matrix[1][1] * pair[1]) % 26
-    ];
-}
-
-function hillEncrypt(text) {
-    text = processText(text);
-    let result = "";
-
-    for (let i = 0; i < text.length; i += 2) {
-        let pair = [charToNum(text[i]), charToNum(text[i+1])];
-        let encrypted = multiplyMatrix(keyMatrix, pair);
-
-        result += numToChar(encrypted[0]);
-        result += numToChar(encrypted[1]);
-    }
-
-    return result;
-}
-
-function hillDecrypt(text) {
-    text = processText(text);
-    let result = "";
-
-    for (let i = 0; i < text.length; i += 2) {
-        let pair = [charToNum(text[i]), charToNum(text[i+1])];
-        let decrypted = multiplyMatrix(inverseKeyMatrix, pair);
-
-        result += numToChar(decrypted[0]);
-        result += numToChar(decrypted[1]);
-    }
-
-    return result;
-}
-
-// =====================
-// MAIN CONTROL LOGIC
-// =====================
-function encrypt() {
-    let text = document.getElementById("textInput").value;
-    let type = document.getElementById("cipherType").value;
-    let result = "";
-
-    document.getElementById("inputLabel").innerText = "Plain Text";
-    document.getElementById("resultLabel").innerText = "Encrypted message";
-
-    if (type === "caesar") {
-        result = caesarCipher(text, 3);
-    } else if (type === "hill") {
-        result = hillEncrypt(text);
-    }
-
-    document.getElementById("DisplayResult").innerText = result;
-}
-
-function decrypt() {
-    let text = document.getElementById("textInput").value;
-    let type = document.getElementById("cipherType").value;
-    let result = "";
-
-    document.getElementById("inputLabel").innerText = "Encrypted message";
-    document.getElementById("resultLabel").innerText = "Plain Text";
-
-    if (type === "caesar") {
-        result = caesarCipher(text, -3);
-    } else if (type === "hill") {
-        result = hillDecrypt(text);
-    }
-
-    document.getElementById("DisplayResult").innerText = result;
-}
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
