@@ -23,13 +23,19 @@ function caesarCipher(text, shift) {
     return result;
 }
 
+const HILL_DEBUG = true;
+function hillDebug(...args) {
+    if (HILL_DEBUG) console.log("[Hill Debug]", ...args);
+}
 
 //Rex//
 function getKeyMatrix() {
-    return [
+    const matrix = [
         [parseInt(document.getElementById("key00").value) || 3, parseInt(document.getElementById("key01").value) || 3],
         [parseInt(document.getElementById("key10").value) || 2, parseInt(document.getElementById("key11").value) || 5]
     ];
+    hillDebug("getKeyMatrix:", matrix);
+    return matrix;
 }
 //Lance//
 function gcd(a, b) {
@@ -50,7 +56,9 @@ function getDeterminantMod26(matrix) {
 //Cris//
 function validateHillKey(matrix) {
     const det = getDeterminantMod26(matrix);
-    if (gcd(det, 26) !== 1) {
+    const valid = gcd(det, 26) === 1;
+    hillDebug("validateHillKey det mod 26:", det, "valid:", valid);
+    if (!valid) {
         throw new Error("Invalid Hill key: determinant has no modular inverse mod 26.");
     }
 }
@@ -63,10 +71,12 @@ function calculateInverseMatrix(matrix) {
         throw new Error("Invalid Hill key: determinant has no modular inverse mod 26.");
     }
 
-    return [
+    const inverseMatrix = [
         [((d * detInv) % 26 + 26) % 26, ((-b * detInv) % 26 + 26) % 26],  //for negative value add 26 till positive//
         [((-c * detInv) % 26 + 26) % 26, ((a * detInv) % 26 + 26) % 26]   //for positive value mod26 get remainder or -26 until range between 1-26//
     ];
+    hillDebug("calculateInverseMatrix det:", det, "detInv:", detInv, "inverseMatrix:", inverseMatrix);
+    return inverseMatrix;
 }
 //Lance//
 function modInverse(a, m) {
@@ -136,27 +146,34 @@ function addPadding(text, casing) {
 }
 //Cris//
 function multiplyMatrix(matrix, pair) {
-    return [
+    const result = [
         ((matrix[0][0] * pair[0] + matrix[0][1] * pair[1]) % 26 + 26) % 26,
         ((matrix[1][0] * pair[0] + matrix[1][1] * pair[1]) % 26 + 26) % 26
     ];
+    hillDebug("multiplyMatrix", pair, "=>", result, "with matrix", matrix);
+    return result;
 }
 //Kyle//
 function hillEncrypt(text) {
+    hillDebug("hillEncrypt start", text);
     let keyMatrix = getKeyMatrix();
     validateHillKey(keyMatrix);
     let casing = extractCasing(text);
     let { processed, positions } = processText(text);
+    hillDebug("processed text", processed, "positions", positions);
     let padded = addPadding(processed, casing);
     processed = padded.processed;
     casing = padded.casing;
+    hillDebug("padded text", processed, "casing", casing);
 
     let encrypted = "";
     for (let i = 0; i < processed.length; i += 2) {
-        let pair = [charToNum(processed[i]), charToNum(processed[i + 1])];
+        let pair = [charToNum(processed[i]), charToNum(processed[i + 1])]; //converts letter to num//
         let enc = multiplyMatrix(keyMatrix, pair);
+        hillDebug("encrypt pair", pair, "=>", enc);
         encrypted += numToChar(enc[0]) + numToChar(enc[1]);
     }
+    hillDebug("encrypted letters", encrypted);
 
     let result = "";
     let letterIndex = 0;
@@ -169,25 +186,33 @@ function hillEncrypt(text) {
         }
     }
 
-    return applyCasing(result, casing);
+    const output = applyCasing(result, casing);
+    hillDebug("hillEncrypt output", output);
+    return output;
 }
 //Kyle//
 function hillDecrypt(text) {
+    hillDebug("hillDecrypt start", text);
     let keyMatrix = getKeyMatrix();
     validateHillKey(keyMatrix);
     let inverseKeyMatrix = calculateInverseMatrix(keyMatrix);
+    hillDebug("inverseKeyMatrix", inverseKeyMatrix);
     let casing = extractCasing(text);
     let { processed, positions } = processText(text);
+    hillDebug("processed text", processed, "positions", positions);
     let padded = addPadding(processed, casing);
     processed = padded.processed;
     casing = padded.casing;
+    hillDebug("padded text", processed, "casing", casing);
 
     let decrypted = "";
     for (let i = 0; i < processed.length; i += 2) {
         let pair = [charToNum(processed[i]), charToNum(processed[i + 1])];
         let dec = multiplyMatrix(inverseKeyMatrix, pair);
+        hillDebug("decrypt pair", pair, "=>", dec);
         decrypted += numToChar(dec[0]) + numToChar(dec[1]);
     }
+    hillDebug("decrypted letters", decrypted);
 
     let result = "";
     let letterIndex = 0;
@@ -200,7 +225,9 @@ function hillDecrypt(text) {
         }
     }
 
-    return applyCasing(result, casing);
+    const output = applyCasing(result, casing);
+    hillDebug("hillDecrypt output", output);
+    return output;
 }
 
 
